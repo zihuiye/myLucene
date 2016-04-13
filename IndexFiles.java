@@ -168,14 +168,13 @@ public class IndexFiles {
    * @param path The file to index, or the directory to recurse into to find files to index
    * @throws IOException If there is a low-level I/O error
    */
-  static void indexDocs(final IndexWriter writer, Path path,Map<String, String> amap) throws IOException {
+  static void indexDocs(final IndexWriter writer, Path path,final Map<String, String> amap) throws IOException {
     if (Files.isDirectory(path)) {
       Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
           try {
-        	final Map<String, String> famap = amap;
-            indexDoc(writer, file, attrs.lastModifiedTime().toMillis(),famap);
+            indexDoc(writer, file, attrs.lastModifiedTime().toMillis(),amap);
           } catch (IOException ignore) {
             // don't index files that can't be read.
           }
