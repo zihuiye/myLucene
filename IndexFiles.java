@@ -22,6 +22,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+//import org.apache.lucene.document.TextField;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexOptions;
@@ -32,6 +33,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -43,6 +45,8 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Index all text files under a directory.
  * <p>
@@ -62,7 +66,9 @@ public class IndexFiles {
     String indexPath = "index";
     String docsPath = null;
     boolean create = true;
-    boolean position = true;
+    //boolean anchor = false;
+    //boolean pagerank = false;
+    //boolean position = true;
     for(int i=0;i<args.length;i++) {
       if ("-index".equals(args[i])) {
         indexPath = args[i+1];
@@ -72,8 +78,10 @@ public class IndexFiles {
         i++;
       } else if ("-update".equals(args[i])) {
         create = false;
-      } else if ("-position".equals(args[i])) {
-	position = true;
+      } else if ("-anchor".equals(args[i])){
+    	//anchor = true;
+      }	else if ("-pagerank".equals(args[i])){
+    	//pagerank = true;
       }
     }
 
@@ -111,9 +119,18 @@ public class IndexFiles {
       // size to the JVM (eg add -Xmx512m or -Xmx1g):
       //
       // iwc.setRAMBufferSizeMB(256.0);
-
+      
+      BufferedReader abr = new BufferedReader(new InputStreamReader(new FileInputStream("anchor.txt"), "UTF-8"));
+      Map<String, String> map0=new HashMap<String, String>();
+	  String line;
+	  while ((line = abr.readLine()) != null){
+		  String [] sa = line.split("\t");
+		  map0.put(sa[0], sa[1]);
+	  }
+      //BufferedReader pbr = new BufferedReader(new InputStreamReader(new FileInputStream("pagerank.txt"), "UTF-8"));
+      
       IndexWriter writer = new IndexWriter(dir, iwc);
-      indexDocs(writer, docDir);
+      indexDocs(writer, docDir, map0);
 
       // NOTE: if you want to maximize search performance,
       // you can optionally call forceMerge here.  This can be
@@ -124,6 +141,8 @@ public class IndexFiles {
       // writer.forceMerge(1);
 
       writer.close();
+      abr.close();
+      //pbr.close();
 
       Date end = new Date();
       System.out.println(end.getTime() - start.getTime() + " total milliseconds");
@@ -149,13 +168,14 @@ public class IndexFiles {
    * @param path The file to index, or the directory to recurse into to find files to index
    * @throws IOException If there is a low-level I/O error
    */
-  static void indexDocs(final IndexWriter writer, Path path) throws IOException {
+  static void indexDocs(final IndexWriter writer, Path path,Map<String, String> amap) throws IOException {
     if (Files.isDirectory(path)) {
       Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
           try {
-            indexDoc(writer, file, attrs.lastModifiedTime().toMillis());
+        	
+            indexDoc(writer, file, attrs.lastModifiedTime().toMillis(),amap);
           } catch (IOException ignore) {
             // don't index files that can't be read.
           }
@@ -163,16 +183,16 @@ public class IndexFiles {
         }
       });
     } else {
-      indexDoc(writer, path, Files.getLastModifiedTime(path).toMillis());
+      indexDoc(writer, path, Files.getLastModifiedTime(path).toMillis(),amap);
     }
   }
 
   /** Indexes a single document */
-  static void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
+  static void indexDoc(IndexWriter writer, Path file, long lastModified,Map<String, String> amap) throws IOException {
     try (InputStream stream = Files.newInputStream(file)) {
       // make a new, empty document
       Document doc = new Document();
-
+      
       boolean pos = false;
       FieldType ft = new FieldType();
       ft.setTokenized(true);
@@ -186,8 +206,15 @@ public class IndexFiles {
       // field that is indexed (i.e. searchable), but don't tokenize 
       // the field into separate words and don't index term frequency
       // or positional information:
+      System.out.println(file.toString());
       Field pathField = new StringField("path", file.toString(), Field.Store.YES);
       doc.add(pathField);
+      String [] sa = file.toString().split("\\\\");
+      System.out.println(amap.get(sa[sa.length-1]));
+      Field anchorField = new TextField("anchor", amap.get(sa[sa.length-1]), Field.Store.YES);
+      anchorField.setBoost(1.5f);
+      doc.add(anchorField);
+      
       
       // Add the last modified date of the file a field named "modified".
       // Use a LongField that is indexed (i.e. efficiently filterable with
