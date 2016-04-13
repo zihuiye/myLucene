@@ -174,8 +174,8 @@ public class IndexFiles {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
           try {
-        	
-            indexDoc(writer, file, attrs.lastModifiedTime().toMillis(),amap);
+        	final Map<String, String> famap = amap;
+            indexDoc(writer, file, attrs.lastModifiedTime().toMillis(),famap);
           } catch (IOException ignore) {
             // don't index files that can't be read.
           }
