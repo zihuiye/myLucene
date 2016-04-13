@@ -209,6 +209,7 @@ public class IndexFiles {
       Field pathField = new StringField("path", file.toString(), Field.Store.YES);
       doc.add(pathField);
       String [] sa = file.toString().split("\\\\");
+      System.out.println(sa[sa.length-1]);
       System.out.println(amap.get(sa[sa.length-1]));
       Field anchorField = new TextField("anchor", amap.get(sa[sa.length-1]), Field.Store.YES);
       anchorField.setBoost(1.5f);
