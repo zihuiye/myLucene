@@ -33,7 +33,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -128,6 +127,14 @@ public class IndexFiles {
 		  String [] sa = line.split("\t");
 		  map0.put(sa[0], sa[1]);
 	  }
+	  BufferedReader tbr = new BufferedReader(new InputStreamReader(new FileInputStream("wiki\\id2url"), "UTF-8"));
+      Map<String, String> map2 = new HashMap<String, String>();
+	  
+	  while ((line = tbr.readLine()) != null){
+		  String [] sa = line.split(" ");
+		  String [] sa1 = sa[1].split("/");
+		  map2.put(sa[0], sa1[sa1.length-1]);
+	  }
       BufferedReader pbr = new BufferedReader(new InputStreamReader(new FileInputStream("pagerank.txt"), "UTF-8"));
       Map<String, Float> map1=new HashMap<String, Float>();
 	  
@@ -136,7 +143,7 @@ public class IndexFiles {
 		  map1.put(sa[0],  Float.parseFloat(sa[1]));
 	  }
       IndexWriter writer = new IndexWriter(dir, iwc);
-      indexDocs(writer, docDir, map0,map1);
+      indexDocs(writer, docDir, map0,map1,map2);
 
       // NOTE: if you want to maximize search performance,
       // you can optionally call forceMerge here.  This can be
@@ -148,8 +155,9 @@ public class IndexFiles {
 
       writer.close();
       abr.close();
+      tbr.close();
       pbr.close();
-
+      
       Date end = new Date();
       System.out.println(end.getTime() - start.getTime() + " total milliseconds");
 
@@ -174,13 +182,13 @@ public class IndexFiles {
    * @param path The file to index, or the directory to recurse into to find files to index
    * @throws IOException If there is a low-level I/O error
    */
-  static void indexDocs(final IndexWriter writer, Path path,final Map<String, String> amap,final Map<String,Float> pmap) throws IOException {
+  static void indexDocs(final IndexWriter writer, Path path,final Map<String, String> amap,final Map<String,Float> pmap,final Map<String,String> tmap) throws IOException {
     if (Files.isDirectory(path)) {
       Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
           try {
-            indexDoc(writer, file, attrs.lastModifiedTime().toMillis(),amap,pmap);
+            indexDoc(writer, file, attrs.lastModifiedTime().toMillis(),amap,pmap,tmap);
           } catch (IOException ignore) {
             // don't index files that can't be read.
           }
@@ -188,12 +196,12 @@ public class IndexFiles {
         }
       });
     } else {
-      indexDoc(writer, path, Files.getLastModifiedTime(path).toMillis(),amap,pmap);
+      indexDoc(writer, path, Files.getLastModifiedTime(path).toMillis(),amap,pmap,tmap);
     }
   }
 
   /** Indexes a single document */
-  static void indexDoc(IndexWriter writer, Path file, long lastModified,Map<String, String> amap,Map<String,Float> pmap) throws IOException {
+  static void indexDoc(IndexWriter writer, Path file, long lastModified,Map<String, String> amap,Map<String,Float> pmap,Map<String,String> tmap) throws IOException {
     try (InputStream stream = Files.newInputStream(file)) {
       // make a new, empty document
       Document doc = new Document();
@@ -220,9 +228,12 @@ public class IndexFiles {
       //System.out.println(sa[sa.length-1]);
       
       Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
-      anchorField.setBoost(1.5f);
+      anchorField.setBoost(1.2f);
       doc.add(anchorField);
       
+      Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
+      titleField.setBoost(1.5f);
+      doc.add(titleField);
       
       // Add the last modified date of the file a field named "modified".
       // Use a LongField that is indexed (i.e. efficiently filterable with
