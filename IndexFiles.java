@@ -249,7 +249,7 @@ public class IndexFiles {
       //System.out.println(sa[sa.length-1]);
       
       Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
-      anchorField.setBoost(1.5f);
+      anchorField.setBoost(1.1f);
       doc.add(anchorField);
       
       Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
@@ -392,7 +392,7 @@ public class IndexFiles {
           
           
           Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
-          anchorField.setBoost(1.5f);
+          anchorField.setBoost(1.1f);
           doc.add(anchorField);
           
           
