@@ -249,11 +249,11 @@ public class IndexFiles {
       //System.out.println(sa[sa.length-1]);
       
       Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
-      anchorField.setBoost(1.2f);
+      anchorField.setBoost(1.5f);
       doc.add(anchorField);
       
       Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
-      titleField.setBoost(1.5f);
+      titleField.setBoost(2f);
       doc.add(titleField);
       
       // Add the last modified date of the file a field named "modified".
@@ -272,7 +272,7 @@ public class IndexFiles {
       
       Field content = new Field("contents", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)),ft);
       
-      content.setBoost(1+pmap.get(id));
+      content.setBoost(pmap.get(id));
       doc.add(content);
       
       //set doc.boost
@@ -325,7 +325,7 @@ public class IndexFiles {
           */
           
           Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
-          titleField.setBoost(1.5f);
+          titleField.setBoost(2f);
           doc.add(titleField);
           
           // Add the last modified date of the file a field named "modified".
@@ -392,12 +392,12 @@ public class IndexFiles {
           
           
           Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
-          anchorField.setBoost(1.2f);
+          anchorField.setBoost(1.5f);
           doc.add(anchorField);
           
           
           Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
-          titleField.setBoost(1.5f);
+          titleField.setBoost(2f);
           doc.add(titleField);
           
           // Add the last modified date of the file a field named "modified".
