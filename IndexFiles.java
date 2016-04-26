@@ -66,9 +66,8 @@ public class IndexFiles {
     String indexPath = "index";
     String docsPath = null;
     boolean create = true;
-    //boolean anchor = false;
-    //boolean pagerank = false;
-    //boolean position = true;
+    String type = "";
+    
     for(int i=0;i<args.length;i++) {
       if ("-index".equals(args[i])) {
         indexPath = args[i+1];
@@ -78,11 +77,15 @@ public class IndexFiles {
         i++;
       } else if ("-update".equals(args[i])) {
         create = false;
-      } else if ("-anchor".equals(args[i])){
-    	//anchor = true;
-      }	else if ("-pagerank".equals(args[i])){
-    	//pagerank = true;
+      } else if ("-type".equals(args[i])){
+    	type = args[i+1]; 
       }
+    }
+    
+    if(type.contains("h")){
+    	indexPath="HIndex";
+    }else if(type.contains("a")){
+    	indexPath="AIndex";
     }
 
     if (docsPath == null) {
@@ -120,14 +123,9 @@ public class IndexFiles {
       //
       // iwc.setRAMBufferSizeMB(256.0);
       
-      BufferedReader abr = new BufferedReader(new InputStreamReader(new FileInputStream("anchor.txt"), "UTF-8"));
-      Map<String, String> map0=new HashMap<String, String>();
-	  String line;
-	  while ((line = abr.readLine()) != null){
-		  String [] sa = line.split("\t");
-		  map0.put(sa[0], sa[1]);
-	  }
-	  BufferedReader tbr = new BufferedReader(new InputStreamReader(new FileInputStream("wiki/id2url"), "UTF-8"));
+      String line;
+      
+      BufferedReader tbr = new BufferedReader(new InputStreamReader(new FileInputStream("wiki\\id2url"), "UTF-8"));
       Map<String, String> map2 = new HashMap<String, String>();
 	  
 	  while ((line = tbr.readLine()) != null){
@@ -135,15 +133,31 @@ public class IndexFiles {
 		  String [] sa1 = sa[1].split("/");
 		  map2.put(sa[0], sa1[sa1.length-1]);
 	  }
+
+	  BufferedReader abr = new BufferedReader(new InputStreamReader(new FileInputStream("anchor.txt"), "UTF-8"));
+	  Map<String, String> map0=new HashMap<String, String>();
+	  
+      if(type.contains("a")){
+	      
+		  
+		  while ((line = abr.readLine()) != null){
+			  String [] sa = line.split("\t");
+			  map0.put(sa[0], sa[1]);
+		  }
+      }
+      
       BufferedReader pbr = new BufferedReader(new InputStreamReader(new FileInputStream("pagerank.txt"), "UTF-8"));
       Map<String, Float> map1=new HashMap<String, Float>();
-	  
-	  while ((line = pbr.readLine()) != null){
-		  String [] sa = line.split("\t");
-		  map1.put(sa[0],  Float.parseFloat(sa[1]));
+      
+	  if(type.contains("h")){
+		   while ((line = pbr.readLine()) != null){
+			   String [] sa = line.split("\t");
+			   map1.put(sa[0],  Float.parseFloat(sa[1]));
+		   }
 	  }
+     
       IndexWriter writer = new IndexWriter(dir, iwc);
-      indexDocs(writer, docDir, map0,map1,map2);
+      indexDocs(writer, docDir, map0,map1,map2,type);
 
       // NOTE: if you want to maximize search performance,
       // you can optionally call forceMerge here.  This can be
@@ -182,13 +196,20 @@ public class IndexFiles {
    * @param path The file to index, or the directory to recurse into to find files to index
    * @throws IOException If there is a low-level I/O error
    */
-  static void indexDocs(final IndexWriter writer, Path path,final Map<String, String> amap,final Map<String,Float> pmap,final Map<String,String> tmap) throws IOException {
+  static void indexDocs(final IndexWriter writer, Path path,final Map<String, String> amap,final Map<String,Float> pmap,final Map<String,String> tmap,String type) throws IOException {
     if (Files.isDirectory(path)) {
       Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
           try {
-            indexDoc(writer, file, attrs.lastModifiedTime().toMillis(),amap,pmap,tmap);
+        	if(type.contains("h")){
+        		indexDoc(writer, file, attrs.lastModifiedTime().toMillis(),amap,pmap,tmap);
+        	}else if(type.contains("a")){
+        		indexDoc(writer,file,attrs.lastModifiedTime().toMillis(),amap,tmap);
+        	}else{
+        		indexDoc(writer,file,attrs.lastModifiedTime().toMillis(),tmap);
+        	}
+            
           } catch (IOException ignore) {
             // don't index files that can't be read.
           }
@@ -205,7 +226,7 @@ public class IndexFiles {
     try (InputStream stream = Files.newInputStream(file)) {
       // make a new, empty document
       Document doc = new Document();
-      
+      System.out.println("H");
       boolean pos = true;
       FieldType ft = new FieldType();
       ft.setTokenized(true);
@@ -223,7 +244,7 @@ public class IndexFiles {
       Field pathField = new StringField("path", file.toString(), Field.Store.YES);
       doc.add(pathField);
       
-      String [] sa = file.toString().split("/");
+      String [] sa = file.toString().split("\\\\");
       String id = sa[sa.length-1];
       //System.out.println(sa[sa.length-1]);
       
@@ -267,7 +288,152 @@ public class IndexFiles {
         // path, if present:
         System.out.println("updating " + file);
         writer.updateDocument(new Term("path", file.toString()), doc);
-      }
-    }
+      		}
+    	}
+   	}
+    
+    static void indexDoc(IndexWriter writer, Path file, long lastModified,Map<String,String> tmap) throws IOException {
+        try (InputStream stream = Files.newInputStream(file)) {
+          // make a new, empty document
+          Document doc = new Document();
+          
+          FieldType ft = new FieldType();
+          ft.setTokenized(true);
+          //ft.setStored(true);
+          
+          ft.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
+          
+          // Add the path of the file as a field named "path".  Use a
+          // field that is indexed (i.e. searchable), but don't tokenize 
+          // the field into separate words and don't index term frequency
+          // or positional information:
+          
+          //System.out.println(file.toString());
+          
+          Field pathField = new StringField("path", file.toString(), Field.Store.YES);
+          doc.add(pathField);
+          
+          String [] sa = file.toString().split("\\\\");
+          String id = sa[sa.length-1];
+          
+          //System.out.println(sa[sa.length-1]);
+          
+          /*
+          Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
+          anchorField.setBoost(1.2f);
+          doc.add(anchorField);
+          */
+          
+          Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
+          titleField.setBoost(1.5f);
+          doc.add(titleField);
+          
+          // Add the last modified date of the file a field named "modified".
+          // Use a LongField that is indexed (i.e. efficiently filterable with
+          // NumericRangeFilter).  This indexes to milli-second resolution, which
+          // is often too fine.  You could instead create a number based on
+          // year/month/day/hour/minutes/seconds, down the resolution you require.
+          // For example the long value 2011021714 would mean
+          // February 17, 2011, 2-3 PM.
+          doc.add(new LongField("modified", lastModified, Field.Store.NO));
+          
+          // Add the contents of the file to a field named "contents".  Specify a Reader,
+          // so that the text of the file is tokenized and indexed, but not stored.
+          // Note that FileReader expects the file to be in UTF-8 encoding.
+          // If that's not the case searching for special characters will fail.
+          
+          Field content = new Field("contents", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)),ft);
+          
+          //content.setBoost(1+pmap.get(id));
+          
+          doc.add(content);
+          
+          //set doc.boost
+          
+          
+          if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
+            // New index, so we just add the document (no old document can be there):
+            System.out.println("adding " + file);
+            writer.addDocument(doc);
+          } else {
+            // Existing index (an old copy of this document may have been indexed) so 
+            // we use updateDocument instead to replace the old one matching the exact 
+            // path, if present:
+            System.out.println("updating " + file);
+            writer.updateDocument(new Term("path", file.toString()), doc);
+          }
+        }
+  }
+    static void indexDoc(IndexWriter writer, Path file, long lastModified,Map<String,String> amap,Map<String,String> tmap) throws IOException {
+        try (InputStream stream = Files.newInputStream(file)) {
+          // make a new, empty document
+          Document doc = new Document();
+          System.out.println("A");
+          FieldType ft = new FieldType();
+          ft.setTokenized(true);
+          //ft.setStored(true);
+          
+          ft.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
+          
+          // Add the path of the file as a field named "path".  Use a
+          // field that is indexed (i.e. searchable), but don't tokenize 
+          // the field into separate words and don't index term frequency
+          // or positional information:
+          
+          //System.out.println(file.toString());
+          
+          Field pathField = new StringField("path", file.toString(), Field.Store.YES);
+          doc.add(pathField);
+          
+          String [] sa = file.toString().split("\\\\");
+          String id = sa[sa.length-1];
+          
+          //System.out.println(sa[sa.length-1]);
+          
+          
+          Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
+          anchorField.setBoost(1.2f);
+          doc.add(anchorField);
+          
+          
+          Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
+          titleField.setBoost(1.5f);
+          doc.add(titleField);
+          
+          // Add the last modified date of the file a field named "modified".
+          // Use a LongField that is indexed (i.e. efficiently filterable with
+          // NumericRangeFilter).  This indexes to milli-second resolution, which
+          // is often too fine.  You could instead create a number based on
+          // year/month/day/hour/minutes/seconds, down the resolution you require.
+          // For example the long value 2011021714 would mean
+          // February 17, 2011, 2-3 PM.
+          doc.add(new LongField("modified", lastModified, Field.Store.NO));
+          
+          // Add the contents of the file to a field named "contents".  Specify a Reader,
+          // so that the text of the file is tokenized and indexed, but not stored.
+          // Note that FileReader expects the file to be in UTF-8 encoding.
+          // If that's not the case searching for special characters will fail.
+          
+          Field content = new Field("contents", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)),ft);
+          
+          //content.setBoost(1+pmap.get(id));
+          
+          doc.add(content);
+          
+          //set doc.boost
+          
+          
+          if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
+            // New index, so we just add the document (no old document can be there):
+            System.out.println("adding " + file);
+            writer.addDocument(doc);
+          } else {
+            // Existing index (an old copy of this document may have been indexed) so 
+            // we use updateDocument instead to replace the old one matching the exact 
+            // path, if present:
+            System.out.println("updating " + file);
+            writer.updateDocument(new Term("path", file.toString()), doc);
+          }
+        }
   }
 }
