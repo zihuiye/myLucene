@@ -333,7 +333,7 @@ public class IndexFiles {
           doc.add(anchorField);
           */
           
-          Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
+          Field titleField = new StringField("title",tmap.get(id),Field.Store.YES);
           titleField.setBoost(titleBoost);
           doc.add(titleField);
           
