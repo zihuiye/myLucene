@@ -56,7 +56,7 @@ import java.util.Map;
 public class IndexFiles {
   
 	protected static float anchorBoost = 1f;
-	protected static float titleBoost = 10f;
+	protected static float titleBoost = 100f;
 	
 	
 	
@@ -257,7 +257,7 @@ public class IndexFiles {
       
       
       
-      Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
+      Field anchorField = new StringField("anchor", amap.get(id), Field.Store.YES);
       anchorField.setBoost(anchorBoost*pr);
       doc.add(anchorField);
       
@@ -405,7 +405,7 @@ public class IndexFiles {
           doc.add(anchorField);
           
           
-          Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
+          Field titleField = new StringField("title",tmap.get(id),Field.Store.YES);
           titleField.setBoost(titleBoost);
           doc.add(titleField);
           
