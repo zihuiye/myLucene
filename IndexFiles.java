@@ -55,6 +55,11 @@ import java.util.Map;
  */
 public class IndexFiles {
   
+	protected static float anchorBoost = 1f;
+	protected static float titleBoost = 2f;
+	
+	
+	
   private IndexFiles() {}
 
   /** Index all text files under a directory. */
@@ -248,12 +253,16 @@ public class IndexFiles {
       String id = sa[sa.length-1];
       //System.out.println(sa[sa.length-1]);
       
+      float pr = pmap.get(id);
+      
+      
+      
       Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
-      anchorField.setBoost(1.1f);
+      anchorField.setBoost(anchorBoost*pr);
       doc.add(anchorField);
       
       Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
-      titleField.setBoost(2f);
+      titleField.setBoost(titleBoost*pr);
       doc.add(titleField);
       
       // Add the last modified date of the file a field named "modified".
@@ -272,7 +281,7 @@ public class IndexFiles {
       
       Field content = new Field("contents", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)),ft);
       
-      content.setBoost(pmap.get(id));
+      content.setBoost(pr);
       doc.add(content);
       
       //set doc.boost
@@ -325,7 +334,7 @@ public class IndexFiles {
           */
           
           Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
-          titleField.setBoost(2f);
+          titleField.setBoost(titleBoost);
           doc.add(titleField);
           
           // Add the last modified date of the file a field named "modified".
@@ -392,12 +401,12 @@ public class IndexFiles {
           
           
           Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
-          anchorField.setBoost(1.1f);
+          anchorField.setBoost(anchorBoost);
           doc.add(anchorField);
           
           
           Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
-          titleField.setBoost(2f);
+          titleField.setBoost(titleBoost);
           doc.add(titleField);
           
           // Add the last modified date of the file a field named "modified".
