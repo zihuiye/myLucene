@@ -173,7 +173,7 @@ public class SearchFiles {
       
       for (int i = start; i < end; i++) {
         if (raw) {                              // output raw format
-          System.out.println("doc="+hits[i].doc+" score="+hits[i].score + searcher.explain(query, hits[i].doc));
+          System.out.println("doc="+hits[i].doc+" score="+hits[i].score);
           continue;
         }
 
