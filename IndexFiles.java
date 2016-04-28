@@ -55,8 +55,8 @@ import java.util.Map;
  */
 public class IndexFiles {
   
-	protected static float anchorBoost = 1f;
-	protected static float titleBoost = 1.3f;
+	protected static float anchorBoost = 0.8f;
+	protected static float titleBoost = 1f;
 	
 	
 	
