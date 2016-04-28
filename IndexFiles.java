@@ -201,7 +201,7 @@ public class IndexFiles {
    * @param path The file to index, or the directory to recurse into to find files to index
    * @throws IOException If there is a low-level I/O error
    */
-  static void indexDocs(final IndexWriter writer, Path path,final Map<String, String> amap,final Map<String,Float> pmap,final Map<String,String> tmap,String type) throws IOException {
+  static void indexDocs(final IndexWriter writer, Path path,final Map<String, String> amap,final Map<String,Float> pmap,final Map<String,String> tmap,final String type) throws IOException {
     if (Files.isDirectory(path)) {
       Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
         @Override
