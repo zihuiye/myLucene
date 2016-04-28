@@ -260,11 +260,11 @@ public class IndexFiles {
       Field anchorField = new TextField("anchor", amap.get(id), Field.Store.YES);
       anchorField.setBoost(anchorBoost*pr);
       doc.add(anchorField);
-      /*
+      
       Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
       titleField.setBoost(titleBoost*pr);
       doc.add(titleField);
-      */
+      
       // Add the last modified date of the file a field named "modified".
       // Use a LongField that is indexed (i.e. efficiently filterable with
       // NumericRangeFilter).  This indexes to milli-second resolution, which
@@ -332,11 +332,11 @@ public class IndexFiles {
           anchorField.setBoost(1.2f);
           doc.add(anchorField);
           */
-          /*
+          
           Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
           titleField.setBoost(titleBoost);
           doc.add(titleField);
-          */
+          
           // Add the last modified date of the file a field named "modified".
           // Use a LongField that is indexed (i.e. efficiently filterable with
           // NumericRangeFilter).  This indexes to milli-second resolution, which
@@ -404,11 +404,11 @@ public class IndexFiles {
           anchorField.setBoost(anchorBoost);
           doc.add(anchorField);
           
-          /*
+          
           Field titleField = new TextField("title",tmap.get(id),Field.Store.YES);
           titleField.setBoost(titleBoost);
           doc.add(titleField);
-          */
+          
           // Add the last modified date of the file a field named "modified".
           // Use a LongField that is indexed (i.e. efficiently filterable with
           // NumericRangeFilter).  This indexes to milli-second resolution, which

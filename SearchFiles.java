@@ -96,7 +96,7 @@ public class SearchFiles {
     } else {
       in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
     }
-    QueryParser parser = new MultiFieldQueryParser(new String[] {field,"title","anchor"}, analyzer);
+    QueryParser parser = new MultiFieldQueryParser(new String[] {field,"anchor"}, analyzer);
     while (true) {
       if (queries == null && queryString == null) {                        // prompt the user
         System.out.println("Enter query: ");
