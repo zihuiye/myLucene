@@ -130,7 +130,7 @@ public class IndexFiles {
       
       String line;
       
-      BufferedReader tbr = new BufferedReader(new InputStreamReader(new FileInputStream("wiki\\id2url"), "UTF-8"));
+      BufferedReader tbr = new BufferedReader(new InputStreamReader(new FileInputStream("wiki/id2url"), "UTF-8"));
       Map<String, String> map2 = new HashMap<String, String>();
 	  
 	  while ((line = tbr.readLine()) != null){
@@ -249,7 +249,7 @@ public class IndexFiles {
       Field pathField = new StringField("path", file.toString(), Field.Store.YES);
       doc.add(pathField);
       
-      String [] sa = file.toString().split("\\\\");
+      String [] sa = file.toString().split("/");
       String id = sa[sa.length-1];
       //System.out.println(sa[sa.length-1]);
       
@@ -322,7 +322,7 @@ public class IndexFiles {
           Field pathField = new StringField("path", file.toString(), Field.Store.YES);
           doc.add(pathField);
           
-          String [] sa = file.toString().split("\\\\");
+          String [] sa = file.toString().split("/");
           String id = sa[sa.length-1];
           
           //System.out.println(sa[sa.length-1]);
@@ -394,7 +394,7 @@ public class IndexFiles {
           Field pathField = new StringField("path", file.toString(), Field.Store.YES);
           doc.add(pathField);
           
-          String [] sa = file.toString().split("\\\\");
+          String [] sa = file.toString().split("/");
           String id = sa[sa.length-1];
           
           //System.out.println(sa[sa.length-1]);
