@@ -51,7 +51,7 @@ public class SearchFiles {
     }
 
     String index = "index";
-    String field = "contents";
+    String [] field = {"contents"};
     String queries = null;
     int repeat = 0;
     boolean raw = false;
@@ -63,7 +63,9 @@ public class SearchFiles {
         index = args[i+1];
         i++;
       } else if ("-field".equals(args[i])) {
-        field = args[i+1];
+    	  if(args[i+1].contains("a")){
+    		  field=new String[]{"contents","anchor"};
+    	  }
         i++;
       } else if ("-queries".equals(args[i])) {
         queries = args[i+1];
@@ -96,7 +98,7 @@ public class SearchFiles {
     } else {
       in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
     }
-    QueryParser parser = new MultiFieldQueryParser(new String[] {field,"anchor"}, analyzer);
+    QueryParser parser = new MultiFieldQueryParser(field, analyzer);
     while (true) {
       if (queries == null && queryString == null) {                        // prompt the user
         System.out.println("Enter query: ");
@@ -114,7 +116,7 @@ public class SearchFiles {
       }
       
       Query query = parser.parse(line);
-      System.out.println("Searching for: " + query.toString(field));
+      System.out.println("Searching for: " + query.toString());
             
       if (repeat > 0) {                           // repeat & time as benchmark
         Date start = new Date();
