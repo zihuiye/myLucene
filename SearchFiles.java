@@ -180,11 +180,11 @@ public class SearchFiles {
         Document doc = searcher.doc(hits[i].doc);
         String path = doc.get("path");
         if (path != null) {
-          System.out.println((i+1) + "PATH. " + path);
+          System.out.println((i+1) + ". " + path);
           String title = doc.get("title");
           if (title != null) {
-            System.out.println("TITLE: " + doc.get("title") );
-            System.out.println("EXPLAIN: "+searcher.explain(query, hits[i].doc)+"EXPLAIN");
+            System.out.println("   Title: " + doc.get("title") );
+            System.out.println(searcher.explain(query, hits[i].doc));
           }
         } else {
           System.out.println((i+1) + ". " + "No path for this document");
