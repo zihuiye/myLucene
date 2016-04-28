@@ -176,14 +176,14 @@ public class SearchFiles {
           System.out.println("doc="+hits[i].doc+" score="+hits[i].score + searcher.explain(query, hits[i].doc));
           continue;
         }
-        
+
         Document doc = searcher.doc(hits[i].doc);
         String path = doc.get("path");
         if (path != null) {
           System.out.println((i+1) + ". " + path);
           String title = doc.get("title");
           if (title != null) {
-            System.out.println("   Title: " + doc.get("title")+"  score = " + hits[i].score+ " " +searcher.explain(query, hits[i].doc));
+            System.out.println("   Title: " + doc.get("title")+"  score = " + hits[i].score);
           }
         } else {
           System.out.println((i+1) + ". " + "No path for this document");
