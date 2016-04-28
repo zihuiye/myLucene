@@ -182,7 +182,8 @@ public class SearchFiles {
           System.out.println((i+1) + ". " + path);
           String title = doc.get("title");
           if (title != null) {
-            System.out.println("   Title: " + doc.get("title")+"  score = " + hits[i].score+ " " +searcher.explain(query, hits[i].doc));
+            System.out.println("   Title: " + doc.get("title") );
+            System.out.println(searcher.explain(query, hits[i].doc));
           }
         } else {
           System.out.println((i+1) + ". " + "No path for this document");
